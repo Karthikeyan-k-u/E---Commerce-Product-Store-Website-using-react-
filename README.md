@@ -1,6 +1,8 @@
 # Whole Mart — Everything You Need. Effortlessly.
 
-> A senior UI/UX caliber e-commerce web application featuring a futuristic spatial visual design theme, built for a semester-3 college demonstration project and ready for static deployment on **Cloudflare Pages**.
+> A senior UI/UX caliber e-commerce web application featuring a futuristic spatial visual design theme, built for a semester-3 college demonstration project and deployed on **Cloudflare Pages**.
+
+**🌐 Live site: [https://whole-mart.pages.dev](https://whole-mart.pages.dev)**
 
 ---
 
@@ -69,22 +71,47 @@ npm run preview
 
 ## ☁️ Cloudflare Pages Deployment Guide
 
-Deploying Whole Mart to Cloudflare Pages is completely free and requires zero backend server configuration:
+**Live site: [https://whole-mart.pages.dev](https://whole-mart.pages.dev)**
 
-1. Push this project repository to **GitHub** or **GitLab**.
-2. Log in to your [Cloudflare Dashboard](https://dash.cloudflare.com/) and navigate to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
-3. Authorize the Cloudflare GitHub app for the account that owns the repository.
-4. Select your repository and configure the following build settings:
-   * **Project name**: `whole-mart` (serves from `https://whole-mart.pages.dev`)
-   * **Framework preset**: `Vite`
-   * **Build command**: `npm run build`
-   * **Build output directory**: `dist`
-   * **Root directory**: leave **empty** — this repository's root *is* the app folder, so the build runs from `package.json` at the top level.
-5. Optionally add the environment variable `NODE_VERSION` = `22` to pin the build image's Node version.
-6. Click **Save and Deploy**. Every subsequent push to the production branch (`main`) automatically rebuilds and redeploys.
-7. Cloudflare Pages automatically honors the `public/_redirects` file (`/* /index.html 200`), allowing all deep links (`/shop`, `/product/:slug`, `/checkout`, `/account/orders`) to route properly without 404 errors.
+This project is deployed to Cloudflare Pages using **Direct Upload**, which is free and needs no backend configuration. The production branch is `main`.
 
-> **Note:** Git integration is a one-way choice. A project created this way cannot later be switched to Direct Upload, and Direct Upload projects cannot be switched *to* Git integration.
+### 1. Authenticate Wrangler
+```bash
+wrangler login
+```
+This opens a browser and stores an OAuth token in your OS credential store. Run it once; later deploys reuse the cached session.
+
+### 2. Build
+```bash
+npm run build
+```
+This runs `tsc -b && vite build` and emits optimized static assets into `dist/`.
+
+### 3. Deploy
+```bash
+wrangler pages deploy ./dist --project-name whole-mart
+```
+
+The `whole-mart` project already exists, so you only need step 3 for subsequent deploys. To create it from scratch instead:
+```bash
+wrangler pages project create whole-mart --production-branch main
+```
+
+> There is no `build` config to set here. Because the repository root *is* the app folder, `package.json` lives at the top level and `dist/` is the only output directory.
+
+### Redeploying after a change
+Cloudflare Pages does **not** build this repository for you, so pushing to `main` does not publish anything. To ship a change:
+```bash
+npm run build
+wrangler pages deploy ./dist --project-name whole-mart
+```
+Check what is live at any time with `wrangler pages deployment list --project-name whole-mart`, and roll back with **Deployments** in the Cloudflare dashboard.
+
+### Deep links
+Cloudflare Pages automatically honors the `public/_redirects` file (`/* /index.html 200`), so all client-side routes — `/shop`, `/product/:slug`, `/checkout`, `/account/orders`, `/communities` — serve the app shell instead of a 404. Never remove that file.
+
+> **Note:** This project was created with Direct Upload, which Cloudflare treats as a permanent choice — it cannot later be switched to Git integration. If push-to-deploy is ever wanted, a **new** Pages project must be created through the dashboard's **Connect to Git** flow and this one retired.
+
 
 ---
 
