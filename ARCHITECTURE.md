@@ -79,15 +79,15 @@ src/
 ├── hooks/
 │   ├── useSocialOrder.ts       # Cart-order & product-enquiry links
 │   ├── useGroupBuy.ts          # Derives ladder state, price & buyer feed
-│   ├── useUnlockedCommunities.ts  # Communities bought from but not yet joined
-│   └── useFriendsInCommunity.ts   # Contacts of yours in a community (0-5)
+│   ├── useCommunityUnlock.ts   # Who may join: canJoin + guarded requestJoin
+│   └── useUnlockedCommunities.ts  # Communities bought from but not yet joined
 ├── types/
 │   └── index.ts                # Strict TypeScript interfaces
 ├── lib/
 │   ├── animations.ts           # Centralized Framer Motion presets
 │   ├── social.ts               # Cart-order & product-enquiry message builders
-│   ├── groupBuy.ts             # Tier resolution, effective price, formatting
-│   ├── hash.ts                 # FNV-1a + murmur seed, shared by all generators
+│   ├── groupBuy.ts             # Tier resolution, effective price, join rule
+│   ├── hash.ts                 # FNV-1a + murmur seed behind the buyer feed
 │   └── utils.ts                # Currency format (₹), slugify, cn
 └── pages/                      # Page routes
     ├── HomePage.tsx            # Hero, categories, trending, spotlight
@@ -131,10 +131,9 @@ Every product belongs to exactly one community, so every product runs a **group 
 * **Pricing** — `getEffectivePrice()` applies the unlocked step on top of community member pricing. A non-member still benefits, because the unlock is a community reward rather than a membership perk. The resolved price is written onto the cart item, so cart totals and checkout always agree.
 * **Personal framing** — the panel speaks to the visitor: your current price, what you save, the price everyone pays once the next step unlocks (`projectedPrice()`), and what joining the community would drop it to (`joinPrice` / `joinSaves`). A fully unlocked ladder says so instead of projecting.
 * **Membership benefits** — all four `community.perks`, the member count, the member discount and the promo code live in the panel's membership block behind a disclosure, so the shopper sees what belonging gets them without a second competing call to action.
-* **Buying is what earns the join** — the panel shows its join CTA to every non-member, including people who already bought this product, and the copy changes to say so: *"You bought this, so Aura Circle is open to you now."* `UnlockedCommunityPrompt` then appears after checkout listing each community you have bought from but not joined, with the units that unlocked it. `useUnlockedCommunities` filters out anything already joined or dismissed, and `communityStore` persists `dismissedUnlocks` alongside memberships. The v1 storage key held a bare array, so the loader still parses that shape.
+* **Buying is what earns the join** — membership is never granted for free. `canJoinCommunity(myUnits)` is the single rule: a visitor qualifies once they have bought at least one unit in that community, and it is read by every join surface so none can drift. `useCommunityUnlock` wraps it for single-community pages and pairs it with `requestJoin()`, which no-ops when locked, so a surface that forgets to check still cannot join. `useCommunityGates` returns the same gate for all six communities at once for list pages, because a hook inside a `.map()` would be order-dependent. The five surfaces then render three states: member (leave), bought but not a member (join), and nothing bought (locked, pointing at that community's drops). `ProductCard` shows "Buy to unlock {pct}% member pricing" in the locked state; `GroupBuyPanel` explains that buying *this* product unlocks membership. `UnlockedCommunityPrompt` appears after checkout listing each community bought from but not joined, and `communityStore` persists `dismissedUnlocks` alongside memberships. The v1 storage key held a bare array, so the loader still parses that shape.
 * **Personal spend tiers** — `SPEND_TIERS` is a separate three-rung ladder (Bronze 1 / Silver 3 / Gold 6) counted in the units *you* have bought in that community, not the crowd's. `sumMyUnitsInCommunity()` sums `PurchaseRecord.units` over the community's `dropProductIds`; it deliberately does not count `entries`, which are capped for display while units keep accumulating. Every perk is non-monetary, because the group ladder already owns the discount maths and a second percentage would stack with member pricing into a silly final number. `SpendTierMeter` renders as one row plus three dots inside the sticky panel.
-* **Social proof** — `buildBuyerFeed()` generates a deterministic, realistic buyer list per product id (name, community, units, variant, time). Product ids are sequential, so the hash uses FNV-1a with a murmur finalizer, shared via `lib/hash.ts`, to keep neighbouring products from landing on neighbouring values. Counts vary from 1 to 7 people, and the card cluster, the feed header and the 1-buyer case each have their own copy. The card avatar stack stays tappable and opens a WhatsApp enquiry naming the buyer; the detail-page feed is a read-only timeline.
-* **Your own contacts** — `buildFriendsInCommunity()` returns 0-5 contacts per community from the same hash. `FriendsInCommunity` renders it on the product detail page only and returns `null` at zero, because "0 contacts" is a real answer and a row of empty space is worse than saying nothing. It lives in its own hook specifically so it cannot be pulled into a product card by accident: cards answer who else is buying, this answers who in your own life already made the move.
+* **Social proof** — `buildBuyerFeed()` generates a deterministic, realistic buyer list per product id (name, community, units, variant, time). Product ids are sequential, so the hash uses FNV-1a with a murmur finalizer to keep neighbouring products from landing on neighbouring values. Counts vary from 1 to 7 people, and the card cluster, the feed header and the 1-buyer case each have their own copy. The card avatar stack stays tappable and opens a WhatsApp enquiry naming the buyer; the detail-page feed is a read-only timeline.
 * **Counting purchases** — units are claimed on a placed checkout order, never on *add to cart*. Browsing does not move the ladder.
 * **Free shipping** — a fully unlocked `freeShipping` step sets `CartItem.freeShipping`, which waives delivery on the whole basket.
 

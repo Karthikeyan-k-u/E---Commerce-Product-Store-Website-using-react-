@@ -4,6 +4,7 @@ import { Users, Lock, Check, Copy, ArrowLeft, ShieldCheck, Zap, Truck } from 'lu
 import { COMMUNITIES, getCommunityBySlug, getMemberPrice } from '../data/communities';
 import { PRODUCTS } from '../data/products';
 import { useCommunityStore } from '../store/communityStore';
+import { useCommunityUnlock } from '../hooks/useCommunityUnlock';
 import { useToast } from '../components/ui/Toast';
 import { Button } from '../components/ui/Button';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -15,6 +16,8 @@ export const CommunityDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const community = slug ? getCommunityBySlug(slug) : undefined;
   const { joinedCommunities, join, leave } = useCommunityStore();
+  // Called before the not-found return, since a hook cannot sit after it.
+  const gate = useCommunityUnlock(slug ?? '');
   const { addToast } = useToast();
   const [copied, setCopied] = useState(false);
 
@@ -38,10 +41,17 @@ export const CommunityDetailPage: React.FC = () => {
     if (isMember) {
       leave(community.slug);
       addToast(`You left ${community.name}`, 'info');
-    } else {
-      join(community.slug);
-      addToast(`Welcome to ${community.name} — early access unlocked!`, 'success');
+      return;
     }
+    if (!gate.canJoin) {
+      addToast(
+        `Buy any ${community.category} drop to unlock ${community.name} membership`,
+        'info'
+      );
+      return;
+    }
+    join(community.slug);
+    addToast(`Welcome to ${community.name} — early access unlocked!`, 'success');
   };
 
   const handleCopyCode = () => {
@@ -125,19 +135,35 @@ export const CommunityDetailPage: React.FC = () => {
 
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm space-y-2">
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Exclusive Offer Codes</div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-black tracking-wider px-3 py-1.5 rounded-lg border border-white/15 bg-black/40" style={{ color: community.color }}>
-                    {community.promoCode}
-                  </span>
-                  <Button size="sm" variant="secondary" onClick={handleCopyCode}
-                    leftIcon={copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}>
-                    {copied ? 'Copied!' : 'Copy'}
-                  </Button>
-                </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Applies automatically at checkout for {community.name} members.
-                </div>
+                {isMember ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-black tracking-wider px-3 py-1.5 rounded-lg border border-white/15 bg-black/40" style={{ color: community.color }}>
+                        {community.promoCode}
+                      </span>
+                      <Button size="sm" variant="secondary" onClick={handleCopyCode}
+                        leftIcon={copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}>
+                        {copied ? 'Copied!' : 'Copy'}
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Applies automatically at checkout for {community.name} members.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
+                      <Lock className="w-4 h-4 shrink-0" style={{ color: community.color }} />
+                      Unlocks when you join
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                      <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                      {community.name} members get {community.memberDiscountPct}% off automatically at
+                      checkout on every drop.
+                    </div>
+                  </>
+                )}
               </div>
 
               <Button
@@ -147,8 +173,17 @@ export const CommunityDetailPage: React.FC = () => {
                 className="w-full"
                 leftIcon={<Lock className="w-4 h-4" />}
               >
-                {isMember ? 'Leave Community' : `Join ${community.name}`}
+                {isMember
+                  ? 'Leave Community'
+                  : gate.canJoin
+                    ? `Join ${community.name}`
+                    : 'Locked'}
               </Button>
+              {!isMember && !gate.canJoin && (
+                <p className="text-[11px] text-text-muted text-center mt-2 leading-relaxed">
+                  Membership is earned. Buy any {community.category} drop below and this unlocks.
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Star, Eye, Lock, Users } from 'lucide-react';
 import { Product } from '../../types';
 import { formatINR } from '../../lib/utils';
+import { canJoinCommunity } from '../../lib/groupBuy';
 import { useCartStore } from '../../store/cartStore';
 import { useWishlistStore } from '../../store/wishlistStore';
 import { useGroupBuy } from '../../hooks/useGroupBuy';
@@ -215,13 +216,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
 
         {groupBuy && !isMember && (
-          <Link
-            to={`/communities/${groupBuy.communitySlug}`}
-            onClick={(e) => e.stopPropagation()}
-            className="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
-          >
-            Join {groupBuy.communityName} to unlock {groupBuy.communityMemberDiscountPct}% off
-          </Link>
+          canJoinCommunity(groupBuy.myCommunityUnits) ? (
+            <Link
+              to={`/communities/${groupBuy.communitySlug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
+            >
+              Join {groupBuy.communityName} to unlock {groupBuy.communityMemberDiscountPct}% off
+            </Link>
+          ) : (
+            <p className="flex items-center gap-1 text-[10px] text-text-muted">
+              <Lock className="w-3 h-3 shrink-0" />
+              Buy to unlock {groupBuy.communityMemberDiscountPct}% member pricing
+            </p>
+          )
         )}
       </div>
     </FloatingCard>

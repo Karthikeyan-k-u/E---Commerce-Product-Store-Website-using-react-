@@ -106,6 +106,12 @@ export const sumMyUnitsInCommunity = (
     0
   );
 
+/**
+ * The one definition of who may join: membership is earned by purchasing, never
+ * handed out. A visitor with at least one unit bought in the community is in.
+ */
+export const canJoinCommunity = (myUnits: number): boolean => myUnits > 0;
+
 export const getSpendTier = (units: number): SpendTier | undefined => {
   let reached: SpendTier | undefined;
   SPEND_TIERS.forEach((tier) => {

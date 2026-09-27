@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check, ChevronDown, Crown, Lock, Sparkles, Users } from 'lucide-react';
 import type { Product } from '../../types';
 import { useGroupBuy, useGroupBuyCountdown, type GroupBuyView } from '../../hooks/useGroupBuy';
-import { peopleLabel } from '../../lib/groupBuy';
+import { canJoinCommunity, peopleLabel } from '../../lib/groupBuy';
 import { getCommunityBySlug } from '../../data/communities';
 import { cn, formatINR, formatNumber } from '../../lib/utils';
 import { GroupBuyLadder } from './GroupBuyLadder';
@@ -26,6 +26,7 @@ const PanelBody: React.FC<PanelBodyProps> = ({ groupBuy, className }) => {
     communityName,
     communityColor,
     communitySlug,
+    communityMemberDiscountPct,
     units,
     progressPct,
     tiers,
@@ -50,11 +51,12 @@ const PanelBody: React.FC<PanelBodyProps> = ({ groupBuy, className }) => {
   } = groupBuy;
 
   const community = getCommunityBySlug(communitySlug);
-  // Buying must never hide the join: buying is what earns it. Previously this
-  // required !isYouIn, which meant the one person most ready to join never saw
-  // the button.
-  const showJoinCta = !isMember;
-  const showSpendTier = isMember || isYouIn;
+  // Buying is what earns the join, and buying *in this community* is what earns
+  // it. Previously this required !isYouIn, which meant the one person most ready
+  // to join never saw the button.
+  const canJoin = canJoinCommunity(myCommunityUnits);
+  const showJoinCta = !isMember && canJoin;
+  const showSpendTier = isMember || myCommunityUnits > 0;
 
   return (
     <section
@@ -219,12 +221,21 @@ const PanelBody: React.FC<PanelBodyProps> = ({ groupBuy, className }) => {
                 {community.memberDiscountPct}% member pricing
               </div>
             </div>
-            <span
-              className="text-[11px] font-bold px-2 py-1 rounded-full shrink-0"
-              style={{ color: communityColor, backgroundColor: `${communityColor}15` }}
-            >
-              {community.promoCode}
-            </span>
+            {/* The offer code is the membership reward, so it stays a teaser
+                until the visitor has actually joined. */}
+            {isMember ? (
+              <span
+                className="text-[11px] font-bold px-2 py-1 rounded-full shrink-0"
+                style={{ color: communityColor, backgroundColor: `${communityColor}15` }}
+              >
+                {community.promoCode}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full shrink-0 text-text-muted border border-surface-border">
+                <Lock className="h-3 w-3 shrink-0" />
+                Unlocks on join
+              </span>
+            )}
           </div>
 
           <details className="group/perks">
@@ -257,6 +268,17 @@ const PanelBody: React.FC<PanelBodyProps> = ({ groupBuy, className }) => {
             />
           )}
 
+          {!isMember && !canJoin && (
+            <p className="flex items-start gap-1.5 text-[11px] text-text-muted leading-relaxed">
+              <Lock className="h-3 w-3 mt-0.5 shrink-0" style={{ color: communityColor }} />
+              <span>
+                Buy this and you unlock {communityName} membership —{' '}
+                {communityMemberDiscountPct}% member pricing on every {communityName} drop, plus{' '}
+                {community.perks.length} benefits.
+              </span>
+            </p>
+          )}
+
           {showJoinCta && (
             <>
               <p className="text-[11px] text-text-muted">
@@ -270,7 +292,8 @@ const PanelBody: React.FC<PanelBodyProps> = ({ groupBuy, className }) => {
                   </>
                 ) : (
                   <>
-                    Join {communityName} and this drops to{' '}
+                    You have bought in {communityName}, so membership is open to you. This drops
+                    to{' '}
                     <span className="font-bold text-text-primary tabular-nums">
                       {formatINR(joinPrice)}
                     </span>

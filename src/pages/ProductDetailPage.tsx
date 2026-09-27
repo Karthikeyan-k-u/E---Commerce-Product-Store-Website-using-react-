@@ -25,7 +25,6 @@ import { ProductReviews } from '../components/product/ProductReviews';
 import { RelatedProducts } from '../components/product/RelatedProducts';
 import { GroupBuyPanel } from '../components/groupbuy/GroupBuyPanel';
 import { BuyerFeed } from '../components/groupbuy/BuyerFeed';
-import { FriendsInCommunity } from '../components/groupbuy/FriendsInCommunity';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { Button } from '../components/ui/Button';
 import { useCartStore } from '../store/cartStore';
@@ -413,22 +412,23 @@ export const ProductDetailPage: React.FC = () => {
       {/* Who bought this product */}
       {community && <BuyerFeed product={product} community={community} />}
 
-      {/* Your own contacts in this community. Detail page only, never the cards. */}
-      {community && (
-        <FriendsInCommunity
-          communitySlug={community.slug}
-          communityName={community.name}
-          color={community.color}
-          className="mt-4"
-        />
-      )}
-
       {/* Tabbed Section: Specs, Reviews, Shipping Policy */}
       <div className="pt-10 border-t border-surface-border space-y-6">
-        <div className="flex items-center gap-2 border-b border-surface-border">
+        <div className="flex items-center gap-2 border-b border-surface-border overflow-x-auto scrollbar-none">
+          <button
+            onClick={() => setActiveTab('description')}
+            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 shrink-0 ${
+              activeTab === 'description'
+                ? 'border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Description & Overview</span>
+          </button>
           <button
             onClick={() => setActiveTab('specs')}
-            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors ${
+            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors shrink-0 ${
               activeTab === 'specs'
                 ? 'border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-text-muted hover:text-text-primary'
@@ -438,7 +438,7 @@ export const ProductDetailPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors ${
+            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors shrink-0 ${
               activeTab === 'reviews'
                 ? 'border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-text-muted hover:text-text-primary'
@@ -448,7 +448,7 @@ export const ProductDetailPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('shipping')}
-            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors ${
+            className={`pb-3.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors shrink-0 ${
               activeTab === 'shipping'
                 ? 'border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-text-muted hover:text-text-primary'
@@ -459,6 +459,57 @@ export const ProductDetailPage: React.FC = () => {
         </div>
 
         {/* Tab Content */}
+        {activeTab === 'description' && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-2xl bg-surface border border-surface-border space-y-5">
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Product Story & Details
+                </span>
+                <h3 className="text-base sm:text-lg font-bold text-text-primary font-display">
+                  {product.name}
+                </h3>
+                <p className="text-xs sm:text-sm text-text-secondary leading-relaxed pt-1">
+                  {product.description}
+                </p>
+              </div>
+
+              {product.highlights && product.highlights.length > 0 && (
+                <div className="pt-4 border-t border-surface-border space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted">
+                    Key Features & Engineering Highlights
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {product.highlights.map((highlight, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-surface-border text-xs text-text-secondary"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{highlight}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {product.tags && product.tags.length > 0 && (
+                <div className="pt-4 border-t border-surface-border flex items-center gap-2 flex-wrap text-xs">
+                  <span className="text-text-muted text-[11px] font-medium">Categories & Tags:</span>
+                  {product.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[11px] font-semibold"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {activeTab === 'specs' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(product.specifications).map(([key, val]) => (

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Users, ArrowRight, Sparkles, Lock, Check } from 'lucide-react';
 import { COMMUNITIES } from '../data/communities';
 import { useCommunityStore } from '../store/communityStore';
+import { useCommunityGates } from '../hooks/useCommunityUnlock';
 import { useToast } from '../components/ui/Toast';
 import { Button } from '../components/ui/Button';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -11,9 +12,11 @@ import { formatNumber } from '../lib/utils';
 
 export const CommunitiesPage: React.FC = () => {
   const { joinedCommunities, join, leave } = useCommunityStore();
+  const gates = useCommunityGates();
   const { addToast } = useToast();
 
   const handleJoin = (slug: string, name: string) => {
+    if (!gates[slug]?.canJoin) return;
     join(slug);
     addToast(`Welcome to ${name} — early access unlocked!`, 'success');
   };
@@ -62,6 +65,7 @@ export const CommunitiesPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {COMMUNITIES.map((community, idx) => {
           const isMember = joinedCommunities.includes(community.slug);
+          const gate = gates[community.slug];
           return (
             <RevealOnScroll key={community.id} variant="fade-up" delay={idx * 0.07}>
               <div
@@ -116,18 +120,30 @@ export const CommunitiesPage: React.FC = () => {
                   </ul>
 
                   <div className="mt-auto flex flex-col gap-2 pt-2">
-                    <Button
-                      size="md"
-                      variant={isMember ? 'secondary' : 'primary'}
-                      onClick={() =>
-                        isMember
-                          ? handleLeave(community.slug, community.name)
-                          : handleJoin(community.slug, community.name)
-                      }
-                      className="w-full"
-                    >
-                      {isMember ? 'Leave Community' : 'Join Community'}
-                    </Button>
+                    {gate.canJoin || isMember ? (
+                      <Button
+                        size="md"
+                        variant={isMember ? 'secondary' : 'primary'}
+                        onClick={() =>
+                          isMember
+                            ? handleLeave(community.slug, community.name)
+                            : handleJoin(community.slug, community.name)
+                        }
+                        className="w-full"
+                      >
+                        {isMember ? 'Leave Community' : 'Join Community'}
+                      </Button>
+                    ) : (
+                      <>
+                        <Button size="md" variant="secondary" disabled className="w-full">
+                          <Lock className="w-3.5 h-3.5" />
+                          Locked
+                        </Button>
+                        <p className="text-[10px] text-text-muted text-center leading-relaxed">
+                          Buy any {community.category} drop to unlock membership
+                        </p>
+                      </>
+                    )}
                     <Link
                       to={`/communities/${community.slug}`}
                       className="text-center text-xs font-semibold text-text-muted hover:text-indigo-500 dark:hover:text-indigo-400 flex items-center justify-center gap-1 py-1 transition-colors"
