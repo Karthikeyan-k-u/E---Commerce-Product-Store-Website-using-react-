@@ -1,70 +1,135 @@
-# Getting Started with Create React App
+# Whole Mart — Everything You Need. Effortlessly.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> A senior UI/UX caliber e-commerce web application featuring a futuristic spatial visual design theme, built for a semester-3 college demonstration project and ready for static deployment on **Cloudflare Pages**.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Live Demo & Presentation Features
 
-### `npm start`
+* **Spatial Visual Language**: Floating product cards, depth layers, 3D mouse-reactive perspective tilt, specular border glow, and gentle orbital animations.
+* **Responsive Multi-Viewport Layout**: Purpose-built responsiveness from mobile smartphones (320px – 414px) up to ultra-wide 4K desktop displays.
+* **Interactive 360-Degree Product Spin**: Simulated mouse-drag and touch-swipe 360° product rotation with degree readout, inertia, and reset controls.
+* **Optical Hover Zoom Lens**: High-definition zoom inspection on desktop and tap-to-expand lightbox modals on mobile.
+* **Smart Search Overlay (`Cmd + K` / `Ctrl + K`)**: Predictive instant search as you type, recent searches history, and trending keyword chips.
+* **Multi-Faceted Product Filtering**: Live category filtering, dynamic price range sliders, rating filters, brand checkboxes, and color swatches with removable chips.
+* **Multi-Step Demo Checkout Wizard**:
+  1. Recipient Information with validation
+  2. Doorstep Shipping with realistic Indian addresses
+  3. Demo Payment Gateway (Instant UPI / QR Code, Interactive Credit Card with live card preview, Net Banking, Cash on Delivery)
+  4. Final Order Review & Verification
+* **Floating Confetti Celebration & Live Order Tracking**: Animated celebratory order confirmation, generated Order ID (`WMT-2026-XXXX`), and 5-stage package tracking timeline.
+* **Dual Color Modes**: Deep midnight space dark mode & clean aerodynamic light mode with system preference auto-detection and persistence.
+* **Robust Frontend State**: Cart, Wishlist, Theme, Recently Viewed, and Order History synchronized with `localStorage`.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Technology Stack
 
-### `npm test`
+* **Core Framework**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+* **Build Tool**: [Vite 6](https://vitejs.dev/) (Sub-second HMR, optimized production rollup)
+* **Styling**: [Tailwind CSS 3.4](https://tailwindcss.com/) with custom spatial design tokens
+* **Motion & Physics**: [Framer Motion 12](https://www.framer.com/motion/)
+* **Icons**: [Lucide React](https://lucide.dev/)
+* **Routing**: [React Router 7](https://reactrouter.com/) (HTML5 History client-side routing)
+* **State Management**: [Zustand 5](https://github.com/pmndrs/zustand) with LocalStorage persistence
+* **Celebration Effects**: [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)
+* **Hosting Target**: [Cloudflare Pages](https://pages.cloudflare.com/) (Zero-server static distribution)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 📦 Installation & Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
+* Node.js v18+ or v20+ (tested on Node v24)
+* npm v9+
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Run Local Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the store.
 
-### `npm run eject`
+### 3. Production Build
+```bash
+npm run build
+```
+Emits optimized static production assets into the `dist/` folder.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 4. Preview Production Build Locally
+```bash
+npm run preview
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## ☁️ Cloudflare Pages Deployment Guide
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Deploying Whole Mart to Cloudflare Pages is completely free and requires zero backend server configuration:
 
-## Learn More
+1. Push this project repository to **GitHub** or **GitLab**.
+2. Log in to your [Cloudflare Dashboard](https://dash.cloudflare.com/) and navigate to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
+3. Select your repository and configure the following build settings:
+   * **Framework preset**: `Vite`
+   * **Build command**: `npm run build`
+   * **Build output directory**: `dist`
+   * **Root directory**: `./project5ecom` (or leave empty if deployed from project root)
+4. Click **Save and Deploy**.
+5. Cloudflare Pages automatically honors the `public/_redirects` file (`/* /index.html 200`), allowing all deep links (`/shop`, `/product/:slug`, `/checkout`, `/account/orders`) to route properly without 404 errors.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📂 Project Architecture
 
-### Code Splitting
+```text
+project5ecom/
+├── public/
+│   ├── _redirects              # Cloudflare Pages SPA client-side routing rule
+│   └── favicon.svg             # Floating Whole Mart brand icon
+├── src/
+│   ├── components/
+│   │   ├── motion/             # 8 dynamic animation primitives
+│   │   ├── ui/                 # Accessible buttons, inputs, modals, drawers, toasts
+│   │   ├── layout/             # Header, AnnouncementBar, Footer, MobileNav, Layout
+│   │   ├── product/            # ProductCard, Grid, Filters, Gallery, 360Viewer, StickyBar
+│   │   ├── cart/               # CartDrawer, CartItemRow, FreeShippingMeter
+│   │   ├── checkout/           # Stepper & 4-step wizard forms
+│   │   └── search/             # Cmd+K predictive search overlay
+│   ├── data/
+│   │   └── products.ts         # 24+ realistic mock products in 6 categories (INR ₹)
+│   ├── store/                  # Zustand stores (Cart, Wishlist, Theme, Orders, Recent)
+│   ├── types/                  # TypeScript interfaces
+│   ├── lib/                    # Framer Motion presets & currency formatters
+│   ├── pages/                  # 12 application page views
+│   ├── styles/                 # Tailwind CSS & design token variables
+│   ├── App.tsx                 # Master route definitions
+│   └── main.tsx                # React 19 root mount
+├── vite.config.ts              # Vite configuration
+├── tailwind.config.js          # Custom design tokens & animations
+├── tsconfig.json               # TypeScript configuration
+├── DESIGN_SYSTEM.md            # Comprehensive design system & tokens guide
+└── ARCHITECTURE.md             # Technical architecture & Cloudflare documentation
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## 🎨 Spatial Design System Highlights
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+* **Typography**: Outlined using `Outfit` for geometric headlines and `Inter` for crisp body copy.
+* **Palette**: Deep space `#07090e`, midnight card surfaces `#0f1422`, indigo `#6366f1`, violet `#8b5cf6`, and cyan `#06b6d4`.
+* **Motion Physics**: Spring-based interactions (`stiffness: 260`, `damping: 24`) for realistic weightless feedback.
+* **Full Reduced Motion Support**: Honors `prefers-reduced-motion` across all components to ensure accessibility.
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🔮 Future Improvements (Post-College Demo)
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+* Real payment gateway integration (Stripe / Razorpay webhooks)
+* User authentication with Firebase Auth or Supabase
+* PostgreSQL database with Prisma ORM
+* Admin inventory management dashboard
+* Order status push notifications via Webhooks
