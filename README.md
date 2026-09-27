@@ -73,13 +73,18 @@ Deploying Whole Mart to Cloudflare Pages is completely free and requires zero ba
 
 1. Push this project repository to **GitHub** or **GitLab**.
 2. Log in to your [Cloudflare Dashboard](https://dash.cloudflare.com/) and navigate to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
-3. Select your repository and configure the following build settings:
+3. Authorize the Cloudflare GitHub app for the account that owns the repository.
+4. Select your repository and configure the following build settings:
+   * **Project name**: `whole-mart` (serves from `https://whole-mart.pages.dev`)
    * **Framework preset**: `Vite`
    * **Build command**: `npm run build`
    * **Build output directory**: `dist`
-   * **Root directory**: `./project5ecom` (or leave empty if deployed from project root)
-4. Click **Save and Deploy**.
-5. Cloudflare Pages automatically honors the `public/_redirects` file (`/* /index.html 200`), allowing all deep links (`/shop`, `/product/:slug`, `/checkout`, `/account/orders`) to route properly without 404 errors.
+   * **Root directory**: leave **empty** — this repository's root *is* the app folder, so the build runs from `package.json` at the top level.
+5. Optionally add the environment variable `NODE_VERSION` = `22` to pin the build image's Node version.
+6. Click **Save and Deploy**. Every subsequent push to the production branch (`main`) automatically rebuilds and redeploys.
+7. Cloudflare Pages automatically honors the `public/_redirects` file (`/* /index.html 200`), allowing all deep links (`/shop`, `/product/:slug`, `/checkout`, `/account/orders`) to route properly without 404 errors.
+
+> **Note:** Git integration is a one-way choice. A project created this way cannot later be switched to Direct Upload, and Direct Upload projects cannot be switched *to* Git integration.
 
 ---
 
